@@ -1,53 +1,39 @@
 <%
 if params[:flag] == "true"
 
-  result_map = ''
-  pre_rand_val = nil
-  count = 1
+  result_map = '' # 結果の図
+  pre_rand_val = nil # 一回前のループ処理でのrandomの値
   result = {}
   for i in 1..100 do
-    # 図作る処理
-    b_or_w = ''
-    random = rand(0..1)
+  
+    #### 図作る処理 ####
+    random = rand(0..1) # ランダムで0or1を返す
     if random == 0
-      b_or_w = '○'
-      b_or_w += '<br>' if i%10 == 0
+      result_map += '○'
     elsif random == 1
-      b_or_w += '●'
-      b_or_w += '<br>' if i%10 == 0
+      result_map += '●'
     end
-    result_map += b_or_w
+    result_map += '<br>' if i%10 == 0 # 10回で行を折り返す
 
-    # 連続を数える処理
-    if i == 100 #最後のループの時は保存して切り上げる
-      if result[count]
-          result[count] = result[count] + 1
-      else
-        result.store(count, 1)
-      end
-      break
-    end
-
-    if pre_rand_val == nil
+    #### 連続を数える処理 ####
+    if pre_rand_val == nil #1回目のループ
       count = 1
-    elsif pre_rand_val == random
+    elsif pre_rand_val == random #前と裏表が同じだったとき
       count += 1
     else #表裏同じ向きの連続が終わった時
-      if result[count]
-        result[count] = result[count] + 1
-      else
-        result.store(count, 1)
-      end
+      result[count] ? result[count] = result[count] + 1 : result.store(count, 1)
       count = 1
     end
-    pre_rand_val = random
+    pre_rand_val = random #初期化
 
   end
-  result = result.sort.to_h
-  sum = result.values.inject(:+)
+  result[count] ? result[count] = result[count] + 1 : result.store(count, 1) #100回目保存処理
+
+  sum = result.values.inject(:+) # 割合出すための分母算出
+  result = result.sort
   description = ""
   result.each do |item|
-    probability = item[1]/sum.to_f*100
+    probability = item[1]/sum.to_f*100 # 割合算出
     description += "#{item[0]}回同じ向きが連続した場合が出現した回数: #{item[1]}回(約#{probability}％)<br>"
   end
 
