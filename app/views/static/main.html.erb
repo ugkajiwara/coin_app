@@ -1,0 +1,78 @@
+<%
+if params[:flag] == "true"
+
+  result_map = ''
+  pre_rand_val = nil
+  count = 1
+  result = {}
+  for i in 1..100 do
+    # 図作る処理
+    b_or_w = ''
+    random = rand(0..1)
+    if random == 0
+      b_or_w = '○'
+      b_or_w += '<br>' if i%10 == 0
+    elsif random == 1
+      b_or_w += '●'
+      b_or_w += '<br>' if i%10 == 0
+    end
+    result_map += b_or_w
+
+    # 連続を数える処理
+    if i == 100 #最後のループの時は保存して切り上げる
+      if result[count]
+          result[count] = result[count] + 1
+      else
+        result.store(count, 1)
+      end
+      break
+    end
+
+    if pre_rand_val == nil
+      count = 1
+    elsif pre_rand_val == random
+      count += 1
+    else #表裏同じ向きの連続が終わった時
+      if result[count]
+        result[count] = result[count] + 1
+      else
+        result.store(count, 1)
+      end
+      count = 1
+    end
+    pre_rand_val = random
+
+  end
+  result = result.sort.to_h
+  sum = result.values.inject(:+)
+  description = ""
+  result.each do |item|
+    probability = item[1]/sum.to_f*100
+    description += "#{item[0]}回同じ向きが連続した場合が出現した回数: #{item[1]}回(約#{probability}％)<br>"
+  end
+
+end
+%>
+
+<div>
+コインを100回投げて、裏表の結果を表にする。<br>
+ー＞裏表をランダムに出力するプログラムを組んで、<br>
+1行目に1~10回目、2行目に11~20回目、3行目に21~30回目...という表を作成する。<br>
+この時、何連続して何回同じ面がでて、その全体に占める割合をまとめたものをを図の下に表示する。<br>
+例外として、100回目の時点では次の試行がないのでそこで切り上げの処理を行う。
+</div>
+
+<form  action="" method="get">
+ <input name="flag" type="hidden" value="true">
+ <input type="submit" value="実行">
+</form>
+
+<form  action="" method="get">
+ <input name="flag" type="hidden" value="false">
+ <input type="submit" value="リセット">
+</form>
+
+<div style = "line-height: 15px" >
+  <%= result_map.html_safe if result_map %>
+</div>
+<%= description.html_safe if description %>
